@@ -24,11 +24,14 @@
 <div class="LoginBox">
     <img alt="" src="csbsju_logo.png" class="logo">
     <h2>User Login</h2>
-    <form action="LoginAction.jsp" method="post">
+    <form action="Login_action.jsp" method="post">
         <p>Username</p>
         <input type="text" name="username" placeholder="Enter Username" required>
         <p>Password</p>
-        <input type="password" name="password" placeholder="Enter Password" required>
+        <input type="password" name="password" placeholder="Enter Password" minlength="8" required>
+        <% if (request.getParameter("error") != null) {%>
+        <h3> <%= request.getParameter("error") %> </h3>
+        <% } %>
         <input type="submit" value="Login">
         <input type="button" value="Sign Up" onclick="window.location='Sign_Up.jsp'" >
     </form>
