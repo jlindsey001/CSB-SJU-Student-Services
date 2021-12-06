@@ -1,105 +1,105 @@
 <!DOCTYPE html>
 <%@ page import="Student_Services.User.Account" %>
-<%Account acc =  (Account) session.getAttribute("account");%>
+<%@ page import="Student_Services.Listing.listing" %>
+<%@ page import="java.util.List" %>
+<%@ page import ="Student_Services.Database.DBController"%>
+<%@ page import ="Student_Services.User.AccountController"%>
+<%@ page import="Student_Services.Database.DBControllerSQLServer" %>
+<jsp:include page="/sidebar/sidebar.jsp"></jsp:include>
+<%Account acc =  (Account) session.getAttribute("account");
+    List<listing> listings;
+if (request.getParameter("sorted") != null) {
+    listings = (List<listing>) session.getAttribute("sortedList");
+}
+else {
+     listings = (List<listing>) session.getAttribute("listings");
+}
+%>
+
 <html lang="en" dir="ltr">
 <head>
+    <title> Welcome Page </title>
     <meta charset="UTF-8">
     <!--<title> Responsive Sidebar Menu  | CodingLab </title>-->
     <link rel="stylesheet" href="welcome.css">
+    <link rel="stylesheet" href="tester.css">
     <!-- Boxicons CDN Link -->
     <link href='https://unpkg.com/boxicons@2.0.7/css/boxicons.min.css' rel='stylesheet'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
-<div class="sidebar">
-    <div class="logo-details">
-        <div class="logo_name">CSB|SJU <br> Student Services</div>
-        <i class='bx bx-menu' id="btn" ></i>
+
+<section class="home-section">
+    <div class="text">Listings
+        <% if (request.getParameter("sorted") != null) { %>
+        | <%=request.getParameter("sorted")%>
+        <% }%>
     </div>
-    <ul class="nav-list">
-        <li>
-            <i class='bx bx-search' ></i>
-            <input type="text" placeholder="Search...">
-            <span class="tooltip">Search</span>
-        </li>
-        <li>
-            <a href="Welcome.jsp">
-                <i class='bx bxs-home' ></i>
-                <span class="links_name">Home</span>
-            </a>
-            <span class="tooltip">Home</span>
-        </li>
-        <li>
-            <a href="#">
-                <i class='bx bx-user' ></i>
-                <span class="links_name">Account</span>
-            </a>
-            <span class="tooltip">Account</span>
-        </li>
-        <li>
-            <a href="#">
-                <i class='bx bx-chat' ></i>
-                <span class="links_name">Messages</span>
-            </a>
-            <span class="tooltip">Messages</span>
-        </li>
-        <li>
-            <a href="AddProduct.jsp">
-                <i class='bx bxs-plus-square'></i>
-                <span class="links_name">Add Listing</span>
-            </a>
-            <span class="tooltip">Order</span>
-        </li>
-        <li>
-            <a href="#">
-                <i class='bx bxs-bookmarks'></i>
-                <span class="links_name">Bookmarks</span>
-            </a>
-            <span class="tooltip">Bookmarks</span>
-        </li>
-        <li class="profile">
-            <div class="profile-details">
-                <!--<img src="profile.jpg" alt="profileImg">-->
-                <div class="name_job">
-                    <div class="name"><%=acc.getUsername()%></div>
-                    <div class="details">User Account</div>
+    <form action="SortAction.jsp" method="post">
+    <select name="sorting" id="sorting" onclick="this.form.submit()">
+        <option value="Date: Oldest to Newest">Date: Oldest to Newest</option>
+        <option value="Date: Newest to Oldest">Date: Newest to Oldest</option>
+        <option value="Price: Low to High">Price: Low to High</option>
+        <option value="Price: High to Low">Price: High to Low</option>
+        <option value="Most Liked">Most Liked</option>
+    </select>
+    </form>
+    <%
+        for (int i = 0; i < listings.size(); i++) {
+
+    %>
+    <div class="container">
+        <div class="product">
+            <div class="product-card">
+                <h2 class="name"> <%= listings.get(i).getTitle()%></h2>
+                <span class="price"> $<%= String.format("%.2f",listings.get(i).getPrice())%></span>
+                <a class="popup-btn">View Listing</a>
+                <img src="csbsju_logo.png" class="product-img" alt="">
+                <span class="date"><i class='bx bxs-calendar'></i> Posted on: <%= listings.get(i).getPost_date()%></span>
+            </div>
+            <div class="popup-view">
+                <div class="popup-card">
+                    <a><i class='bx bx-x close-btn'></i></a>
+                    <div class="product-img">
+                        <img src="csbsju_logo.png" alt="">
+                    </div>
+                    <div class="info">
+                        <%
+                            Account a = AccountController.getAccount(listings.get(i).getAuthorID());
+                        %>
+                        <h2><%= listings.get(i).getTitle()%><br><span>Author's Name: <%= a.getFirst_name() + " " + a.getLast_name() %></span></h2>
+                        <p><%= listings.get(i).getDescription()%></p>
+                        <span class="price"> $<%= String.format("%.2f",listings.get(i).getPrice())%></span>
+                        <a href="#"> <i class='bx bxs-heart'></i> </a>
+                    </div>
                 </div>
             </div>
-            <br>
-            <br>
-            <br>
-            <a href="Logout.jsp">
-            <i class='bx bx-log-out' id="log_out" ></i>
-            </a>
-        </li>
-    </ul>
-</div>
-<section class="home-section">
-    <div class="text">Home</div>
+        </div> <% }    %>
+   </div>
 </section>
 <script>
-    let sidebar = document.querySelector(".sidebar");
-    let closeBtn = document.querySelector("#btn");
-    let searchBtn = document.querySelector(".bx-search");
+    var popupViews = document.querySelectorAll('.popup-view');
+    var popupBtns = document.querySelectorAll('.popup-btn');
+    var closeBtns = document.querySelectorAll('.close-btn');
 
-    closeBtn.addEventListener("click", ()=>{
-        sidebar.classList.toggle("open");
-        menuBtnChange();//calling the function(optional)
-    });
-
-    searchBtn.addEventListener("click", ()=>{ // Sidebar open when you click on the search iocn
-        sidebar.classList.toggle("open");
-        menuBtnChange(); //calling the function(optional)
-    });
-
-    // following are the code to change sidebar button(optional)
-    function menuBtnChange() {
-        if(sidebar.classList.contains("open")){
-            closeBtn.classList.replace("bx-menu", "bx-menu-alt-right");//replacing the iocns class
-        }else {
-            closeBtn.classList.replace("bx-menu-alt-right","bx-menu");//replacing the iocns class
-        }
+    //javascript for quick view button
+    var popup = function(popupClick){
+        popupViews[popupClick].classList.add('active');
     }
+
+    popupBtns.forEach((popupBtn, i) => {
+        popupBtn.addEventListener("click", () => {
+            popup(i);
+        });
+    });
+
+    //javascript for close button
+    closeBtns.forEach((closeBtn) => {
+        closeBtn.addEventListener("click", () => {
+            popupViews.forEach((popupView) => {
+                popupView.classList.remove('active');
+            });
+        });
+    });
 </script>
 </body>
 </html>
